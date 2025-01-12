@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Section } from '../components/Section';
@@ -8,7 +8,6 @@ import { useInView } from '../hooks/useInView';
 
 interface CharacteristicCardProps {
   title: string;
-  content: string;
   backgroundImage: string;
   modalImage?: string;
   unoptimized?: boolean;
@@ -20,6 +19,10 @@ interface TraitDeCaractere {
   gif: string;
 }
 
+/* -------------------------------------------------------------------------- */
+/*                          MODAL SPÉCIFIQUE CARACTÈRE                        */
+/* -------------------------------------------------------------------------- */
+
 const CaractereModal = ({ onClose }: { onClose: () => void }) => {
   const [traitHover, setTraitHover] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -29,6 +32,17 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
     rootMargin: '0px',
   });
 
+  // ------------------------------------------------------------------------
+  // Scroll lock au montage / déverrouillage au démontage de la modal
+  // ------------------------------------------------------------------------
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   const traits: TraitDeCaractere[] = [
     {
       titre: "Loyal",
@@ -37,22 +51,19 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
     },
     {
       titre: "Calculateur",
-      description: "L'aspect calculateur permet à Kobiro de tirer certaines situations à son avantage. Il ne fait rien sans arrière-pensées. Chacun de ces choix est calculé dans le but d'avoir quelque chose de positif en retour.",
+      description: "L'aspect calculateur permet à Kobiro de tirer certaines situations à son avantage. Il ne fait rien sans arrière-pensées.",
       gif: "/img/caractéristiques/calculateur_gif.gif"
     },
     {
       titre: "Sociable",
-      description: "Kobiro est très sociable. Cela lui permet de facilement tisser des liens, parfois dans des buts précis. Il n'hésitera pas à aller vers les gens tout en masquant ses intentions.",
+      description: "Kobiro est très sociable. Cela lui permet de facilement tisser des liens... tout en masquant ses intentions.",
       gif: "/img/caractéristiques/sociable_gif.gif"
     }
   ];
 
   const traitVariants = {
-    hidden: { 
-      opacity: 0,
-      y: 20,
-    },
-    visible: (index: number) => ({ 
+    hidden: { opacity: 0, y: 20 },
+    visible: (index: number) => ({
       opacity: 1,
       y: 0,
       transition: {
@@ -93,8 +104,8 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
         <button
           onClick={onClose}
           className="absolute top-6 right-6 text-white hover:text-sand-200 z-20
-                   text-4xl transition-all duration-300 p-4 rounded-full 
-                   hover:bg-white/10 hover:scale-110 backdrop-blur-sm"
+                     text-4xl transition-all duration-300 p-4 rounded-full 
+                     hover:bg-white/10 hover:scale-110 backdrop-blur-sm"
           aria-label="Fermer"
         >
           ✕
@@ -115,7 +126,7 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
                 onHoverEnd={() => setTraitHover(null)}
               >
                 <div className="relative w-full aspect-square rounded-2xl overflow-hidden mb-6 max-w-[320px]
-                             shadow-2xl transform transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                               shadow-2xl transform transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]">
                   <Image
                     src={trait.gif}
                     alt={trait.titre}
@@ -124,11 +135,12 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
                     unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 
-                               group-hover:opacity-100 transition-opacity duration-500" />
+                                 group-hover:opacity-100 transition-opacity duration-500" 
+                  />
                 </div>
                 
                 <h3 className="text-3xl font-bold text-white mb-4 transition-all duration-300 
-                             group-hover:text-sand-200 text-shadow-lg tracking-wide">
+                               group-hover:text-sand-200 text-shadow-lg tracking-wide">
                   {trait.titre}
                 </h3>
                 
@@ -140,12 +152,11 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
                         transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="absolute top-0  bg-black/80 backdrop-blur-md p-6 rounded-2xl 
-                                 shadow-2xl border border-white/20 transform-gpu max-h-[180px] overflow-y-auto
-                                 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+                        className="absolute top-0 bg-black/80 backdrop-blur-md p-6 rounded-2xl 
+                                   shadow-2xl border border-white/20 transform-gpu max-h-[180px] overflow-y-auto
+                                   scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
                       >
-                        <p className="text-white text-center text-base leading-relaxed tracking-wide
-                                  font-medium">
+                        <p className="text-white text-center text-base leading-relaxed tracking-wide font-medium">
                           {trait.description}
                         </p>
                       </motion.div>
@@ -161,19 +172,36 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-const Modal = ({ 
-  title, 
+/* -------------------------------------------------------------------------- */
+/*                         MODAL GÉNÉRIQUE PAR DÉFAUT                         */
+/* -------------------------------------------------------------------------- */
+
+const Modal = ({
+  title,
   modalImage,
-  onClose 
-}: { 
-  title: string; 
+  onClose,
+}: {
+  title: string;
   modalImage?: string;
   onClose: () => void;
 }) => {
+  // Si le titre est "Caractère", on renvoie la modal personnalisée
   if (title === "Caractère") {
     return <CaractereModal onClose={onClose} />;
   }
-  
+
+  // ------------------------------------------------------------------------
+  // Scroll lock au montage / déverrouillage au démontage de la modal
+  // ------------------------------------------------------------------------
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -195,7 +223,7 @@ const Modal = ({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-white hover:text-sand-200 z-10 
-                   text-3xl transition-colors p-2 rounded-full hover:bg-black/20"
+                     text-3xl transition-colors p-2 rounded-full hover:bg-black/20"
           aria-label="Fermer"
         >
           ✕
@@ -217,7 +245,17 @@ const Modal = ({
   );
 };
 
-const CharacteristicCard = ({ title, backgroundImage, modalImage, unoptimized = false, index }: CharacteristicCardProps & { index: number }) => {
+/* -------------------------------------------------------------------------- */
+/*                       CARTE CARACTÉRISTIQUE (CARD)                         */
+/* -------------------------------------------------------------------------- */
+
+const CharacteristicCard = ({
+  title,
+  backgroundImage,
+  modalImage,
+  unoptimized = false,
+  index
+}: CharacteristicCardProps & { index: number }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const isCardInView = useInView(cardRef, {
@@ -227,19 +265,15 @@ const CharacteristicCard = ({ title, backgroundImage, modalImage, unoptimized = 
   });
 
   const cardVariants = {
-    hidden: { 
-      opacity: 0,
-      y: 50,
-      scale: 0.9
-    },
-    visible: { 
+    hidden: { opacity: 0, y: 50, scale: 0.9 },
+    visible: {
       opacity: 1,
       y: 0,
       scale: 1,
       transition: {
         duration: 0.8,
-        delay: 0.6 + (index * 0.2), // Délai plus long pour apparaître après le titre
-        ease: [0.215, 0.610, 0.355, 1.000] // Courbe d'animation cubique
+        delay: 0.6 + index * 0.2, 
+        ease: [0.215, 0.610, 0.355, 1.000]
       }
     }
   };
@@ -265,13 +299,12 @@ const CharacteristicCard = ({ title, backgroundImage, modalImage, unoptimized = 
           className="object-cover transition-transform duration-300 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 
-                      group-hover:from-black/80 group-hover:to-black/30 transition-colors" />
+                        group-hover:from-black/80 group-hover:to-black/30 transition-colors" 
+        />
         <div className="absolute inset-x-0 bottom-0 p-6">
-          <h3 className="text-2xl font-bold text-white text-left">
-            {title}
-          </h3>
+          <h3 className="text-2xl font-bold text-white text-left">{title}</h3>
           <p className="text-sand-200 mt-2 opacity-0 group-hover:opacity-100 
-                      transition-opacity duration-300 text-sm">
+                        transition-opacity duration-300 text-sm">
             Cliquez pour en savoir plus
           </p>
         </div>
@@ -290,18 +323,21 @@ const CharacteristicCard = ({ title, backgroundImage, modalImage, unoptimized = 
   );
 };
 
+/* -------------------------------------------------------------------------- */
+/*                     SECTION "CARACTÉRISTIQUES" PRINCIPALE                  */
+/* -------------------------------------------------------------------------- */
+
 const Caracteristique = () => {
   const sectionRef = useRef(null);
   const isSectionInView = useInView(sectionRef, {
-    threshold: 0.2, // Réduit pour déclencher plus tôt
+    threshold: 0.2,
     once: false,
     rootMargin: '0px',
   });
+
   const containerVariants = {
-    hidden: { 
-      opacity: 0 
-    },
-    visible: { 
+    hidden: { opacity: 0 },
+    visible: {
       opacity: 1,
       transition: {
         duration: 0.5,
@@ -313,12 +349,8 @@ const Caracteristique = () => {
   };
 
   const titleVariants = {
-    hidden: { 
-      opacity: 0,
-      y: -30,
-      scale: 0.95
-    },
-    visible: { 
+    hidden: { opacity: 0, y: -30, scale: 0.95 },
+    visible: {
       opacity: 1,
       y: 0,
       scale: 1,
@@ -329,13 +361,10 @@ const Caracteristique = () => {
       }
     }
   };
+
   const separatorVariants = {
-    hidden: { 
-      opacity: 0,
-      width: "0%",
-      scale: 0.8 
-    },
-    visible: { 
+    hidden: { opacity: 0, width: "0%", scale: 0.8 },
+    visible: {
       opacity: 1,
       width: "100%",
       scale: 1,
@@ -364,16 +393,15 @@ const Caracteristique = () => {
       }
     }
   };
+
   const characteristics = [
     {
       title: "Apparence",
-      content: "Description détaillée de l'apparence physique...",
       backgroundImage: "/img/caractéristiques/app_back.png",
       modalImage: "/img/caractéristiques/app_modal.png",
     },
     {
       title: "Caractère",
-      content: "Description détaillée du caractère et de la personnalité...",
       backgroundImage: "/img/caractéristiques/caractere_gif.gif",
       unoptimized: true,
     }
