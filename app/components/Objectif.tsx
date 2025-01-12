@@ -238,6 +238,11 @@ const Objectif = () => {
     }
   };
 
+  const handleTabChange = (tab: 'clan' | 'personnel') => {
+    setActiveTab(tab);
+    setSelectedObjectif(tab === 'clan' ? objectifsClan[0] : objectifsPersonnels[0]);
+  };
+
   return (
     <Section
       ref={sectionRef}
@@ -344,10 +349,7 @@ const Objectif = () => {
           {['clan', 'personnel'].map((tab) => (
             <motion.button
               key={tab}
-              onClick={() => {
-                setActiveTab(tab as 'clan' | 'personnel');
-                setSelectedObjectif((activeTab === 'clan' ? objectifsClan : objectifsPersonnels)[0]);
-              }}
+              onClick={() => handleTabChange(tab as 'clan' | 'personnel')}
               className={`px-8 py-4 rounded-xl text-xl font-bold transition-all
                 ${activeTab === tab 
                   ? 'bg-sand-200 text-[#2A1810] shadow-lg scale-105'

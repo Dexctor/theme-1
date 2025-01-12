@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Section } from '../components/Section';
@@ -14,47 +14,46 @@ interface StoryCardProps {
   index: number;
 }
 
-const Modal = ({ 
-  title, 
-  modalImage,
-  onClose 
-}: { 
+const Modal = ({ title, modalImage, onClose }: { 
   title: string; 
   modalImage?: string;
   onClose: () => void;
-}) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-    onClick={onClose}
-  >
+}) => {
+  useEffect(() => {
+    // Add no-scroll class to body when modal is open
+    document.body.classList.add('no-scroll');
+    return () => {
+      // Remove no-scroll class from body when modal is closed
+      document.body.classList.remove('no-scroll');
+    };
+  }, []);
+
+  return (
     <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.9, opacity: 0 }}
-      transition={{ type: "spring", damping: 25 }}
-      className="relative w-full h-full flex items-center justify-center"
-      onClick={(e) => e.stopPropagation()}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.2 } }}
+      className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+      onClick={onClose}
     >
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={onClose}
-        className="absolute top-4 right-4 text-white hover:text-sand-200 z-10 
-                 text-3xl transition-colors p-2 rounded-full hover:bg-black/20"
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0, transition: { duration: 0.2 } }}
+        transition={{ type: "spring", damping: 25 }}
+        className="relative w-full h-full flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
       >
-        ✕
-      </motion.button>
-      {modalImage && (
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -20, opacity: 0 }}
-          transition={{ delay: 0.2 }}
-          className="relative w-full h-full flex items-center justify-center p-8"
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white hover:text-sand-200 z-10 
+                   text-3xl transition-colors p-2 rounded-full hover:bg-black/20"
         >
+          ✕
+        </motion.button>
+        {modalImage && (
           <Image
             src={modalImage}
             alt={title}
@@ -63,19 +62,20 @@ const Modal = ({
             height={800}
             priority
           />
-        </motion.div>
-      )}
+        )}
+      </motion.div>
     </motion.div>
-  </motion.div>
-);
+  );
+};
 
-const StoryCard = ({ title, backgroundImage, modalImage, index }: StoryCardProps) => {
+// eslint-disable-next-line react/display-name
+const StoryCard = memo(({ title, backgroundImage, modalImage, index }: StoryCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  const isCardInView = useInView(cardRef, { // Suppression du cast
-    threshold: 0.5,
-    once: false,
-    rootMargin: '0px',
+  const isCardInView = useInView(cardRef, {
+    threshold: 0.2,
+    once: true,
+    rootMargin: '-50px',
   });
 
   const cardVariants = {
@@ -87,11 +87,15 @@ const StoryCard = ({ title, backgroundImage, modalImage, index }: StoryCardProps
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
+        duration: 0.8,
         ease: "easeOut",
-        delay: index * 0.2
+        delay: 0.6 + (index * 0.2)
       }
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -101,50 +105,32 @@ const StoryCard = ({ title, backgroundImage, modalImage, index }: StoryCardProps
         variants={cardVariants}
         initial="hidden"
         animate={isCardInView ? "visible" : "hidden"}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="relative h-72 rounded-2xl overflow-hidden cursor-pointer group 
-                 shadow-lg transition-shadow hover:shadow-xl"
+        whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
+        className="relative h-72 rounded-2xl overflow-hidden cursor-pointer 
+                 shadow-lg transition-all duration-300 hover:shadow-xl"
         onClick={() => setIsModalOpen(true)}
       >
-        <motion.div
-          initial={{ scale: 1 }}
-          whileHover={{ scale: 1.1 }}
-          transition={{ duration: 0.6 }}
-          className="absolute inset-0"
-        >
+        <div className="absolute inset-0 transition-transform duration-500 hover:scale-110">
           <Image
             src={backgroundImage}
             alt={title}
             fill
             className="object-cover"
           />
-        </motion.div>
+        </div>
         
-        <motion.div
-          initial={{ opacity: 0.6 }}
-          whileHover={{ opacity: 0.8 }}
-          className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 
-                    transition-opacity duration-300"
-        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 
+                    transition-opacity duration-300 group-hover:opacity-80" />
         
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="absolute inset-x-0 bottom-0 p-6"
-        >
+        <div className="absolute inset-x-0 bottom-0 p-6">
           <h3 className="text-2xl font-bold text-white text-left">
             {title}
           </h3>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
-            className="text-sand-200 mt-2 text-sm"
-          >
+          <p className="text-sand-200 mt-2 text-sm opacity-0 transform translate-y-2 
+                     transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
             Cliquez pour en savoir plus
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
       </motion.div>
 
       <AnimatePresence>
@@ -152,46 +138,23 @@ const StoryCard = ({ title, backgroundImage, modalImage, index }: StoryCardProps
           <Modal
             title={title}
             modalImage={modalImage}
-            onClose={() => setIsModalOpen(false)}
+            onClose={handleCloseModal}
           />
         )}
       </AnimatePresence>
     </>
   );
-};
+});
 
 const InfoButton = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const isButtonInView = useInView(buttonRef, { // Suppression du cast
-    threshold: 0.5,
-    once: false,
-    rootMargin: '0px',
-  });
-
-
-  const buttonVariants = {
-    hidden: { 
-      opacity: 0,
-      scale: 0.8,
-    },
-    visible: { 
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    }
-  };
 
   return (
     <>
       <motion.button
-        ref={buttonRef}
-        variants={buttonVariants}
-        initial="hidden"
-        animate={isButtonInView ? "visible" : "hidden"}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         className="absolute top-6 left-6 z-10 bg-white/10 p-2 rounded-full 
@@ -200,8 +163,8 @@ const InfoButton = () => {
       >
         <motion.div
           animate={{
-            opacity: [1, 0.5, 1],
             scale: [1, 1.1, 1],
+            opacity: [1, 0.8, 1],
           }}
           transition={{
             duration: 2,
@@ -233,60 +196,11 @@ const InfoButton = () => {
 
 const Story = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const isSectionInView = useInView(sectionRef, { // Suppression du cast
-    threshold: 0.8,
-    once: false,
-    rootMargin: '0px',
+  const isSectionInView = useInView(sectionRef, {
+    threshold: 0.2,
+    once: true,
+    rootMargin: '-50px',
   });
-
-
-  const titleVariants = {
-    hidden: { 
-      opacity: 0,
-      y: -20 
-    },
-    visible: { 
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut",
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const separatorVariants = {
-    hidden: { 
-      opacity: 0,
-      scale: 0.8 
-    },
-    visible: { 
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.8,
-        ease: "easeOut",
-        delay: 0.3
-      }
-    }
-  };
-
-  const containerVariants = {
-    hidden: { 
-      opacity: 0 
-    },
-    visible: { 
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-        when: "beforeChildren",
-        staggerChildren: 0.2,
-        delayChildren: 0.3
-      }
-    }
-  };
 
   const stories = [
     {
@@ -316,21 +230,27 @@ const Story = () => {
       id="histoire"
     >
       <InfoButton />
+      
       <motion.div 
         className="container mx-auto px-6"
-        variants={containerVariants}
         initial="hidden"
         animate={isSectionInView ? "visible" : "hidden"}
       >
-        <motion.h2
-          variants={titleVariants}
-          className="text-5xl text-black font-bold text-center mb-12"
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
         >
-          Histoire
-        </motion.h2>
+          <motion.h2 className="text-5xl text-black font-bold">
+            Histoire
+          </motion.h2>
+        </motion.div>
 
         <motion.div
-          variants={separatorVariants}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
           className="flex items-center justify-center mb-16"
         >
           <div className="h-px bg-sand-600 w-full max-w-[200px]" />

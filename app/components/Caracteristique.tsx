@@ -229,15 +229,17 @@ const CharacteristicCard = ({ title, backgroundImage, modalImage, unoptimized = 
   const cardVariants = {
     hidden: { 
       opacity: 0,
-      y: 30,
+      y: 50,
+      scale: 0.9
     },
     visible: { 
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
-        duration: 0.6,
-        delay: index * 0.2,
-        ease: "easeOut"
+        duration: 0.8,
+        delay: 0.6 + (index * 0.2), // Délai plus long pour apparaître après le titre
+        ease: [0.215, 0.610, 0.355, 1.000] // Courbe d'animation cubique
       }
     }
   };
@@ -291,11 +293,10 @@ const CharacteristicCard = ({ title, backgroundImage, modalImage, unoptimized = 
 const Caracteristique = () => {
   const sectionRef = useRef(null);
   const isSectionInView = useInView(sectionRef, {
-    threshold: 0.8,
+    threshold: 0.2, // Réduit pour déclencher plus tôt
     once: false,
     rootMargin: '0px',
   });
-
   const containerVariants = {
     hidden: { 
       opacity: 0 
@@ -303,10 +304,10 @@ const Caracteristique = () => {
     visible: { 
       opacity: 1,
       transition: {
-        duration: 0.3,
+        duration: 0.5,
         when: "beforeChildren",
         staggerChildren: 0.2,
-        delayChildren: 0.3
+        delayChildren: 0.2
       }
     }
   };
@@ -314,36 +315,55 @@ const Caracteristique = () => {
   const titleVariants = {
     hidden: { 
       opacity: 0,
-      y: -20 
+      y: -30,
+      scale: 0.95
     },
     visible: { 
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
-        duration: 0.6,
-        ease: "easeOut",
-        when: "beforeChildren",
-        staggerChildren: 0.1
+        duration: 0.7,
+        ease: [0.215, 0.610, 0.355, 1.000],
+        delay: 0.1
       }
     }
   };
-
   const separatorVariants = {
     hidden: { 
       opacity: 0,
+      width: "0%",
       scale: 0.8 
     },
     visible: { 
       opacity: 1,
+      width: "100%",
       scale: 1,
       transition: {
-        duration: 0.8,
-        ease: "easeOut",
-        delay: 0.3
+        duration: 1,
+        ease: [0.215, 0.610, 0.355, 1.000],
+        delay: 0.4
       }
     }
   };
 
+  const symbolVariants = {
+    hidden: {
+      opacity: 0,
+      scale: 0,
+      rotate: -180
+    },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      rotate: 0,
+      transition: {
+        duration: 0.8,
+        ease: [0.215, 0.610, 0.355, 1.000],
+        delay: 0.5
+      }
+    }
+  };
   const characteristics = [
     {
       title: "Apparence",
@@ -378,14 +398,22 @@ const Caracteristique = () => {
           Caractéristiques
         </motion.h2>
 
-        <motion.div
-          variants={separatorVariants}
-          className="flex items-center justify-center mb-16"
-        >
-          <div className="h-px bg-sand-600 w-full max-w-[200px]" />
+        <div className="flex items-center justify-center mb-16">
+          <motion.div 
+            variants={separatorVariants}
+            className="h-px bg-sand-600 w-full max-w-[200px]" 
+          />
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            variants={symbolVariants}
+            animate={{ 
+              rotate: 360,
+              transition: {
+                duration: 20,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 1
+              }
+            }}
             className="mx-4"
           >
             <Image
@@ -396,8 +424,11 @@ const Caracteristique = () => {
               className="opacity-80"
             />
           </motion.div>
-          <div className="h-px bg-sand-600 w-full max-w-[200px]" />
-        </motion.div>
+          <motion.div 
+            variants={separatorVariants}
+            className="h-px bg-sand-600 w-full max-w-[200px]" 
+          />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {characteristics.map((characteristic, index) => (

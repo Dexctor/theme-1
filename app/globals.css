@@ -115,3 +115,6 @@ html {
 section[id] {
   scroll-margin-top: 2rem;
 }
+.no-scroll {
+  overflow: hidden;
+}
