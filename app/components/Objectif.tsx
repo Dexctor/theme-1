@@ -24,7 +24,7 @@ const objectifsClan: ObjectifData[] = [
   },
   {
     title: "Asseoir son autorité",
-    content: "Kobiro utilisera la désinformation et la manipulation de l'opinion publique pour ternir la réputation du clan Fûma et donc éteindre toute rivalité entre les deux clans. Il organisera des missions de traques pour entrainer les membres du clan Satsu afin de garder leur sens aiguisé.",
+    content: "Kobiro utilisera la désinformation et la manipulation de l'opinion publique pour ternir la réputation du clan Fûma et donc éteindre toute rivalité entre les deux clans.  Il organisera des missions de traques et d'assassinat en compétition avec le clan Fûma, afin d'entrainer les membres du clan Satsu à garder leurs sens aiguisés.",
   },
   {
     title: "Système de missions",
@@ -201,13 +201,25 @@ const BackgroundImage = ({ side }: { side: 'left' | 'right' }) => (
   </motion.div>
 );
 
-const ObjectifDescription = ({ content, isVisible }: { content: string; isVisible: boolean }) => {
+const ObjectifDescription = ({ 
+  content, 
+  isVisible,
+  type 
+}: { 
+  content: string; 
+  isVisible: boolean;
+  type: "clan" | "personnel";
+}) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const isContentInView = useInView(contentRef, {
     threshold: 0.1,
     once: true,
     rootMargin: "0px",
   });
+
+  const iconSrc = type === "clan" 
+    ? "/img/Objectif/icon-clan.png" 
+    : "/img/Objectif/icon.png";
 
   return (
     <motion.div
@@ -224,7 +236,7 @@ const ObjectifDescription = ({ content, isVisible }: { content: string; isVisibl
         transition={{ duration: 0.3 }}
       >
         <Image
-          src="/img/Objectif/icon.png"
+          src={iconSrc}
           alt="Objectif icon"
           width={160}
           height={160}
@@ -331,6 +343,7 @@ const Objectif = () => {
                 }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              style={{ fontFamily: "Edo" }}
             >
               Objectifs {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </motion.button>
@@ -373,6 +386,7 @@ const Objectif = () => {
                   <ObjectifDescription
                     content={selectedObjectif.content}
                     isVisible={isSectionInView}
+                    type={activeTab}
                   />
                 </motion.div>
               )}

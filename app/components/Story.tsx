@@ -27,7 +27,7 @@ const stories: StoryData[] = [
     modalImage: "/img/story/evolution_modal.png",
   },
   {
-    title: "Nouvel Ere",
+    title: "Nouvelle Ere",
     content: "Contenu de l'histoire 3...",
     backgroundImage: "/img/story/card-3.jpg",
     modalImage: "/img/story/nouvelere_modal.png",
@@ -44,55 +44,51 @@ const Modal = ({ title, modalImage, onClose }: {
   onClose: () => void;
 }) => {
   useEffect(() => {
-    document.body.classList.add('no-scroll');
-    return () => document.body.classList.remove('no-scroll');
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
   }, []);
 
-  const modalVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-    exit: { opacity: 0, transition: { duration: 0.2 } }
-  };
-
-  const contentVariants = {
-    hidden: { scale: 0.9, opacity: 0 },
-    visible: { scale: 1, opacity: 1 },
-    exit: { scale: 0.9, opacity: 0, transition: { duration: 0.2 } }
-  };
-
+ 
   return (
     <motion.div
-      variants={modalVariants}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
     >
       <motion.div
-        variants={contentVariants}
-        transition={{ type: "spring", damping: 25 }}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
         className="relative w-full h-full flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 text-white hover:text-sand-200 z-10 
-                   text-3xl transition-colors p-2 rounded-full hover:bg-black/20"
+                     text-3xl transition-colors p-2 rounded-full hover:bg-black/20"
+          aria-label="Fermer"
         >
           ✕
-        </motion.button>
+        </button>
         {modalImage && (
-          <Image
-            src={modalImage}
-            alt={title}
-            className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
-            width={1200}
-            height={800}
-            priority
-          />
+          <div className="relative w-full h-full flex items-center justify-center p-8">
+            <Image
+              src={modalImage}
+              alt={title}
+              className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
+              width={1200}
+              height={800}
+              priority
+            />
+          </div>
         )}
       </motion.div>
     </motion.div>
@@ -103,23 +99,21 @@ const StoryCard = memo(({ title, backgroundImage, modalImage, index }: StoryCard
   const [isModalOpen, setIsModalOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const isCardInView = useInView(cardRef, {
-    threshold: 0.2,
-    once: true,
-    rootMargin: '-50px',
+    threshold: 0.5,
+    once: false,
+    rootMargin: '0px',
   });
 
   const cardVariants = {
-    hidden: { 
-      opacity: 0,
-      y: 50,
-    },
-    visible: { 
+    hidden: { opacity: 0, y: 20, scale: 0.98 },
+    visible: {
       opacity: 1,
       y: 0,
+      scale: 1,
       transition: {
-        duration: 0.8,
-        ease: "easeOut",
-        delay: 0.6 + (index * 0.2)
+        duration: 0.15,
+        delay: 0.1 + index * 0.05,
+        ease: "easeOut"
       }
     }
   };
@@ -131,29 +125,25 @@ const StoryCard = memo(({ title, backgroundImage, modalImage, index }: StoryCard
         variants={cardVariants}
         initial="hidden"
         animate={isCardInView ? "visible" : "hidden"}
-        whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
-        className="relative h-72 rounded-2xl overflow-hidden cursor-pointer 
-                 shadow-lg transition-all duration-300 hover:shadow-xl"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="relative h-72 rounded-2xl overflow-hidden cursor-pointer group 
+                   shadow-lg transition-shadow hover:shadow-xl"
         onClick={() => setIsModalOpen(true)}
       >
-        <div className="absolute inset-0 transition-transform duration-500 hover:scale-110">
-          <Image
-            src={backgroundImage}
-            alt={title}
-            fill
-            className="object-cover"
-          />
-        </div>
-        
+        <Image
+          src={backgroundImage}
+          alt={title}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 
-                    transition-opacity duration-300 group-hover:opacity-80" />
-        
+                      group-hover:from-black/80 group-hover:to-black/30 transition-colors" 
+        />
         <div className="absolute inset-x-0 bottom-0 p-6">
-          <h3 className="text-2xl font-bold text-white text-left">
-            {title}
-          </h3>
-          <p className="text-sand-200 mt-2 text-sm opacity-0 transform translate-y-2 
-                     transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+          <h3 className="text-2xl font-bold text-white text-left">{title}</h3>
+          <p className="text-sand-200 mt-2 opacity-0 group-hover:opacity-100 
+                      transition-opacity duration-300 text-sm">
             Cliquez pour en savoir plus
           </p>
         </div>
@@ -245,28 +235,40 @@ const Story = () => {
     visible: {
       opacity: 1,
       transition: {
-        duration: 0.6,
+        duration: 0.2,
         when: "beforeChildren",
-        staggerChildren: 0.2
+        staggerChildren: 0.05,
+        delayChildren: 0.05
       }
     }
   };
 
+
   const titleVariants = {
-    hidden: { opacity: 0, y: -20 },
+    hidden: { opacity: 0, y: -10, scale: 0.99 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6 }
+      scale: 1,
+      transition: {
+        duration: 0.2,
+        ease: "easeOut",
+        delay: 0
+      }
     }
   };
 
   const separatorVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
+    hidden: { opacity: 0, width: "0%", scale: 0.95 },
     visible: {
       opacity: 1,
+      width: "100%",
       scale: 1,
-      transition: { delay: 0.3, duration: 0.5 }
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+        delay: 0.1
+      }
     }
   };
 
