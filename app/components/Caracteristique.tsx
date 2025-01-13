@@ -32,9 +32,6 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
     rootMargin: '0px',
   });
 
-  // ------------------------------------------------------------------------
-  // Scroll lock au montage / déverrouillage au démontage de la modal
-  // ------------------------------------------------------------------------
   useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
@@ -111,7 +108,8 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
           ✕
         </button>
 
-        <div className="relative z-10 p-12 h-full flex items-center justify-center">
+        {/* Modification ici : Ajout de flex-col pour permettre l'empilement vertical */}
+        <div className="relative z-10 p-12 h-full flex flex-col items-center justify-center">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-20 w-full max-w-[1400px] mx-auto">
             {traits.map((trait, index) => (
               <motion.div
@@ -166,12 +164,16 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
               </motion.div>
             ))}
           </div>
+          
+          {/* Nouveau texte d'aide ajouté */}
+          <p className="text-white/70 italic text-sm mt-8">
+            Passez la souris sur les icônes pour développer les caractères
+          </p>
         </div>
       </motion.div>
     </motion.div>
   );
 };
-
 /* -------------------------------------------------------------------------- */
 /*                         MODAL GÉNÉRIQUE PAR DÉFAUT                         */
 /* -------------------------------------------------------------------------- */
