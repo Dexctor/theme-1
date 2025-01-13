@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import { useState, useRef, useEffect } from 'react';
@@ -12,7 +13,7 @@ const AudioPlayer = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Initialisation de l'audio
+    // Initialisation de l'audio - seulement une fois au montage
     if (!audioRef.current) {
       audioRef.current = new Audio('/audio/Music.mp3');
       audioRef.current.volume = volume;
@@ -32,8 +33,7 @@ const AudioPlayer = () => {
         audioRef.current = null;
       }
     };
-  }, [volume]);
-
+  }, []); // Suppression de la dépendance volume
   const togglePlayPause = () => {
     if (!audioRef.current || !isLoaded) return;
 
@@ -54,6 +54,7 @@ const AudioPlayer = () => {
       audioRef.current.volume = newVolume;
     }
   };
+
 
   const handleEnded = () => {
     if (audioRef.current) {
