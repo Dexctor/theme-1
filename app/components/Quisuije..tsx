@@ -8,11 +8,11 @@ import { useInView } from '../hooks/useInView';
 
 const images = [
   {
-    src: "/img/Qui-suije/Ancien_RP.png",
+    src: "/img/Qui-suis-je/Ancien_RP.png",
     alt: "Ancien RP"
   },
   {
-    src: "/img/Qui-suije/Presentaiton_RP.png",
+    src: "/img/Qui-suis-je/Presentaiton_RP.png",
     alt: "Présentation RP"
   }
 ];

@@ -15,19 +15,19 @@ interface StoryData {
 
 const stories: StoryData[] = [
   {
-    title: "L'Eclosion",
+    title: "L'Éclosion",
     content: "Contenu détaillé de l'histoire de l'éclosion...",
     backgroundImage: "/img/story/card-1.jpg",
     modalImage: "/img/story/eclosion_modal.png",
   },
   {
-    title: "L'Evolution",
+    title: "L'Évolution",
     content: "Contenu de l'histoire 2...",
     backgroundImage: "/img/story/card-2.jpg",
     modalImage: "/img/story/evolution_modal.png",
   },
   {
-    title: "Nouvelle Ere",
+    title: "Nouvelle Ère",
     content: "Contenu de l'histoire 3...",
     backgroundImage: "/img/story/card-3.jpg",
     modalImage: "/img/story/nouvelere_modal.png",

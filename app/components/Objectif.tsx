@@ -58,15 +58,27 @@ const objectifsPersonnels: ObjectifData[] = [
 // Animations
 const animations = {
   container: {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { 
+      opacity: 0,
+      y: 50
+    },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
         duration: 0.8,
         when: "beforeChildren",
+        staggerChildren: 0.2,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -50,
+      transition: {
+        duration: 0.5,
+        when: "afterChildren",
         staggerChildren: 0.1,
-        delayChildren: 0.2,
+        staggerDirection: -1,
       },
     }
   },
@@ -105,28 +117,46 @@ const animations = {
   },
   background: {
     left: {
-      hidden: { opacity: 0, x: -100, scale: 0.98 },
+      hidden: { opacity: 0, x: -200, scale: 0.8 },
       visible: {
         opacity: 0.15,
         x: 0,
         scale: 1,
         transition: {
-          duration: 0.8,
+          duration: 1.2,
           ease: "easeOut",
-          opacity: { duration: 0.6 }
+          opacity: { duration: 1 }
+        }
+      },
+      exit: {
+        opacity: 0,
+        x: -200,
+        scale: 0.8,
+        transition: {
+          duration: 0.8,
+          ease: "easeIn"
         }
       }
     },
     right: {
-      hidden: { opacity: 0, x: 100, scale: 0.98 },
+      hidden: { opacity: 0, x: 200, scale: 0.8 },
       visible: {
         opacity: 0.15,
         x: 0,
         scale: 1,
         transition: {
-          duration: 0.8,
+          duration: 1.2,
           ease: "easeOut",
-          opacity: { duration: 0.6 }
+          opacity: { duration: 1 }
+        }
+      },
+      exit: {
+        opacity: 0,
+        x: 200,
+        scale: 0.8,
+        transition: {
+          duration: 0.8,
+          ease: "easeIn"
         }
       }
     }
@@ -174,16 +204,32 @@ const BackgroundImage = ({ side }: { side: 'left' | 'right' }) => (
     variants={animations.background[side]}
     initial="hidden"
     animate="visible"
+    exit="exit"
+    key={`background-${side}`}
   >
-    <div className="absolute inset-0 blur-[100px] opacity-30">
+    <motion.div 
+      className="absolute inset-0 blur-[100px] opacity-30"
+      animate={{
+        scale: [1, 1.1, 1],
+        opacity: [0.3, 0.4, 0.3],
+      }}
+      transition={{
+        duration: 8,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+    >
       <Image
         src="/img/Objectif/Face.png"
         alt={`Gaara ${side}`}
         fill
         className="object-cover scale-110"
-        style={{ filter: "grayscale(100%) brightness(0.1)" }}
+        style={{ 
+          filter: "grayscale(100%) brightness(0.1)",
+          transform: side === 'left' ? 'scaleX(-1)' : 'none'
+        }}
       />
-    </div>
+    </motion.div>
     <div className={styles.backgroundImage.base}>
       <Image
         src="/img/Objectif/Face.png"
@@ -194,6 +240,7 @@ const BackgroundImage = ({ side }: { side: 'left' | 'right' }) => (
           objectPosition: "50% 50%",
           maskImage: styles.backgroundImage.mask[side],
           WebkitMaskImage: styles.backgroundImage.mask[side],
+          transform: side === 'left' ? 'scaleX(-1)' : 'none'
         }}
       />
       <div className={`absolute inset-0 bg-gradient-to-${side === 'left' ? 'r' : 'l'} from-[#1a0f0a] via-transparent to-transparent opacity-90`} />
@@ -213,7 +260,7 @@ const ObjectifDescription = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const isContentInView = useInView(contentRef, {
     threshold: 0.1,
-    once: true,
+    once: false,
     rootMargin: "0px",
   });
 
@@ -270,7 +317,7 @@ const ObjectifButton = ({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const isButtonInView = useInView(buttonRef, {
     threshold: 0.1,
-    once: true,
+    once: false,
     rootMargin: "0px",
   });
 
@@ -306,95 +353,111 @@ const Objectif = () => {
   const { activeTab, selectedObjectif, handleTabChange, setSelectedObjectif } = useObjectifState();
 
   return (
-    <Section
-      ref={sectionRef}
-      className="relative min-h-screen bg-[#1a0f0a] py-20 overflow-hidden geist-font"
-      id="objectifs"
+    <motion.div
+      initial="hidden"
+      animate={isSectionInView ? "visible" : "hidden"}
+      exit="exit"
+      viewport={{ once: false, amount: 0.3 }}
     >
-      <div className="absolute inset-0 bg-radial-vignette pointer-events-none z-10" />
-      
-      <BackgroundImage side="left" />
-      <BackgroundImage side="right" />
-
-      <motion.div
-        className="container mx-auto px-6 relative z-20"
-        variants={animations.container}
-        initial="hidden"
-        animate={isSectionInView ? "visible" : "hidden"}
+      <Section
+        ref={sectionRef}
+        className="relative min-h-screen bg-[#1a0f0a] py-20 overflow-hidden geist-font"
+        id="objectifs"
       >
-        <motion.h2
-          variants={animations.title}
-          className="text-5xl font-bold text-sand-200 text-center mb-12"
-          style={{ fontFamily: "Edo" }}
+        <motion.div 
+          className="absolute inset-0 bg-radial-vignette pointer-events-none z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isSectionInView ? 1 : 0 }}
+          transition={{ duration: 1 }}
+        />
+        
+        <AnimatePresence mode="wait">
+          {isSectionInView && (
+            <>
+              <BackgroundImage key="background-left" side="left" />
+              <BackgroundImage key="background-right" side="right" />
+            </>
+          )}
+        </AnimatePresence>
+
+        <motion.div
+          className="container mx-auto px-6 relative z-20"
+          variants={animations.container}
         >
-          Objectifs
-        </motion.h2>
+          <motion.h2
+            variants={animations.title}
+            className="text-5xl font-bold text-sand-200 text-center mb-12"
+            style={{ fontFamily: "Edo" }}
+          >
+            Objectifs
+          </motion.h2>
 
-        <div className="flex justify-center mb-16 gap-8">
-          {["clan", "personnel"].map((tab) => (
-            <motion.button
-              key={tab}
-              onClick={() => handleTabChange(tab as "clan" | "personnel")}
-              className={`px-8 py-4 rounded-xl text-xl font-bold transition-all
-                ${
-                  activeTab === tab
-                    ? "bg-sand-200 text-[#2A1810] shadow-lg scale-105"
-                    : "bg-[#2A1810]/30 text-sand-200 hover:bg-[#2A1810]/50"
-                }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              style={{ fontFamily: "Edo" }}
-            >
-              Objectifs {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </motion.button>
-          ))}
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto">
-          <div className="lg:w-1/3">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-4 relative"
-            >
-              {(activeTab === "clan" ? objectifsClan : objectifsPersonnels).map(
-                (objectif, index) => (
-                  <ObjectifButton
-                    key={objectif.title}
-                    title={objectif.title}
-                    isSelected={selectedObjectif?.title === objectif.title}
-                    onClick={() => setSelectedObjectif(objectif)}
-                    index={index}
-                  />
-                )
-              )}
-            </motion.div>
+          <div className="flex justify-center mb-16 gap-8">
+            {["clan", "personnel"].map((tab) => (
+              <motion.button
+                key={tab}
+                onClick={() => handleTabChange(tab as "clan" | "personnel")}
+                className={`px-8 py-4 rounded-xl text-xl font-bold transition-all
+                  ${
+                    activeTab === tab
+                      ? "bg-sand-200 text-[#2A1810] shadow-lg scale-105"
+                      : "bg-[#2A1810]/30 text-sand-200 hover:bg-[#2A1810]/50"
+                  }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ fontFamily: "Edo" }}
+              >
+                Objectifs {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </motion.button>
+            ))}
           </div>
 
-          <div className="lg:w-2/3">
-            <AnimatePresence mode="wait">
-              {selectedObjectif && (
-                <motion.div
-                  key={selectedObjectif.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="bg-[#1a0f0a]/90 backdrop-blur-sm rounded-2xl p-8 h-full
-                           shadow-[0_0_30px_rgba(0,0,0,0.5)] border border-sand-200/10"
-                >
-                  <ObjectifTitle title={selectedObjectif.title} />
-                  <ObjectifDescription
-                    content={selectedObjectif.content}
-                    isVisible={isSectionInView}
-                    type={activeTab}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto">
+            <div className="lg:w-1/3">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-4 relative"
+              >
+                {(activeTab === "clan" ? objectifsClan : objectifsPersonnels).map(
+                  (objectif, index) => (
+                    <ObjectifButton
+                      key={objectif.title}
+                      title={objectif.title}
+                      isSelected={selectedObjectif?.title === objectif.title}
+                      onClick={() => setSelectedObjectif(objectif)}
+                      index={index}
+                    />
+                  )
+                )}
+              </motion.div>
+            </div>
+
+            <div className="lg:w-2/3">
+              <AnimatePresence mode="wait">
+                {selectedObjectif && (
+                  <motion.div
+                    key={selectedObjectif.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="bg-[#1a0f0a]/90 backdrop-blur-sm rounded-2xl p-8 h-full
+                             shadow-[0_0_30px_rgba(0,0,0,0.5)] border border-sand-200/10"
+                  >
+                    <ObjectifTitle title={selectedObjectif.title} />
+                    <ObjectifDescription
+                      content={selectedObjectif.content}
+                      isVisible={isSectionInView}
+                      type={activeTab}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
-      </motion.div>
-    </Section>
+        </motion.div>
+      </Section>
+    </motion.div>
   );
 };
 
