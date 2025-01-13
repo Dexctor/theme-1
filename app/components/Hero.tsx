@@ -126,7 +126,7 @@ export default function Hero() {
       >
         <div className="relative w-full h-full">
           <Image
-            src="/img/Perso.webp"
+            src="/img/perso.webp"
             alt="Kobiro Satsu Character"
             fill
             className="object-contain object-bottom"

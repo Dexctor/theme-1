@@ -103,7 +103,7 @@ const CaractereModal = ({ onClose }: { onClose: () => void }) => {
         
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 text-white hover:text-sand-200 z-20
+          className="absolute top-6 right-6 text-black hover:text-sand-200 z-20
                      text-4xl transition-all duration-300 p-4 rounded-full 
                      hover:bg-white/10 hover:scale-110 backdrop-blur-sm"
           aria-label="Fermer"
@@ -265,15 +265,15 @@ const CharacteristicCard = ({
   });
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.9 },
+    hidden: { opacity: 0, y: 20, scale: 0.98 }, // Réduit l'amplitude du mouvement
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
       transition: {
-        duration: 0.8,
-        delay: 0.6 + index * 0.2, 
-        ease: [0.215, 0.610, 0.355, 1.000]
+        duration: 0.15, // Encore plus rapide
+        delay: 0.1 + index * 0.05, // Délai minimal entre les cartes
+        ease: "easeOut"
       }
     }
   };
@@ -340,59 +340,57 @@ const Caracteristique = () => {
     visible: {
       opacity: 1,
       transition: {
-        duration: 0.5,
+        duration: 0.2,
         when: "beforeChildren",
-        staggerChildren: 0.2,
-        delayChildren: 0.2
+        staggerChildren: 0.05,
+        delayChildren: 0.05
       }
     }
   };
 
   const titleVariants = {
-    hidden: { opacity: 0, y: -30, scale: 0.95 },
+    hidden: { opacity: 0, y: -10, scale: 0.99 },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
       transition: {
-        duration: 0.7,
-        ease: [0.215, 0.610, 0.355, 1.000],
-        delay: 0.1
+        duration: 0.2,
+        ease: "easeOut",
+        delay: 0
       }
     }
   };
-
-  const separatorVariants = {
-    hidden: { opacity: 0, width: "0%", scale: 0.8 },
-    visible: {
-      opacity: 1,
-      width: "100%",
-      scale: 1,
-      transition: {
-        duration: 1,
-        ease: [0.215, 0.610, 0.355, 1.000],
-        delay: 0.4
-      }
+ const separatorVariants = {
+  hidden: { opacity: 0, width: "0%", scale: 0.95 },
+  visible: {
+    opacity: 1,
+    width: "100%",
+    scale: 1,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut",
+      delay: 0.1
     }
-  };
-
-  const symbolVariants = {
-    hidden: {
-      opacity: 0,
-      scale: 0,
-      rotate: -180
-    },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      rotate: 0,
-      transition: {
-        duration: 0.8,
-        ease: [0.215, 0.610, 0.355, 1.000],
-        delay: 0.5
-      }
+  }
+};
+const symbolVariants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.5,
+    rotate: -90
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut",
+      delay: 0.15
     }
-  };
+  }
+};
 
   const characteristics = [
     {
